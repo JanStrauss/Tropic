@@ -1,9 +1,9 @@
 name: Tropic
 main: me.simplex.tropic.Tropic
-version: 0.0.1
+version: 0.0.2
 website: http://over9000.eu
 author: simplex
-startup: startup
+load: startup
 description: WGEN Plugin for Bukkit
 commands:
   tropic:
