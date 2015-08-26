@@ -1,19 +1,15 @@
 Tropic
 ======
 
-Copyright 2012 s1mpl3x
+![Tropic](http://www.over9000.eu/img/tropic.png)
 
-This file is part of Tropic.
+Tropic is a wgen plugin i was working for some time now and with the new jungle biomes being out i decided to complete it. So what does Tropic do? Well it generates a world that is fully covered with a thick rainforest. The Terrain has some nice hills/beaches, but also pretty high mountains. The Generator features a lot of unique BlockPopulators for a individual look:
 
-Tropic is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+*3 Different, fully custom tree types featuring generated world-trees
+*Lakes and small creeks
+*"Glowshrooms"
+*Bushes and all other foliage that can be found in minecraft
+*All ores/lava/gravel/etc you need
+*Custom caves
 
-Tropic is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Tropic If not, see <http://www.gnu.org/licenses/>.
+Screenshots: https://imgur.com/a/5XFQA
