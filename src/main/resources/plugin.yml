@@ -1,6 +1,6 @@
 name: Tropic
 main: eu.over9000.tropic.Tropic
-version: 0.0.3
+version: 0.3.0
 website: https://github.com/s1mpl3x/Tropic
 author: s1mpl3x
 load: startup
