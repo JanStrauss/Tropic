@@ -1,0 +1,20 @@
+name: Tropic
+main: eu.over9000.tropic.Tropic
+version: 0.0.3
+website: https://github.com/s1mpl3x/Tropic
+author: s1mpl3x
+load: startup
+description: WGEN Plugin for Bukkit
+commands:
+  tropic:
+    aliases: [t,trpc]
+    description: Generates a new Tropic-World and ports you into it
+    usage: /<command> [worldname] [seed]
+permissions:
+  tropic.*:
+    description: Gives access to the /tropic command
+    children:
+      canyon.command: true
+  tropic.command:
+    default: op
+    description: gives access to the /tropic command
