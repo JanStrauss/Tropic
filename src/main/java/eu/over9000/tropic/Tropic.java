@@ -32,12 +32,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
 public class Tropic extends JavaPlugin {
-	private Logger log;
-	private Tropic_ChunkGenerator wgen;
+	private final Logger log = Logger.getLogger("Minecraft");
+	private TropicChunkGenerator wgen;
+
+	private static final String DEFAULT_WORLD_NAME = "world_tropic";
+	private static final String WORLD_PREFIX = "world_";
+	private static final List<BlockPopulator> populators = buildPopulators();
 
 	@Override
 	public void onDisable() {
@@ -45,78 +49,56 @@ public class Tropic extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		log = getLogger();
+		wgen = new TropicChunkGenerator(populators);
 	}
 
 	@Override
-	public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
-		return new Tropic_ChunkGenerator(1337, buildPopulators());
-	}
-
-	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+	public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
 		if (!(sender instanceof Player)) {
 			sender.sendMessage("player only command");
 			return true;
 		}
-
-		Player player = (Player) sender;
+		final Player player = (Player) sender;
 		if (!player.hasPermission("tropic.command")) {
-			player.sendMessage("Y U TRY COMMAND IF U NO HAZ PERMISSION?!");
+			player.sendMessage("You don't have the permission required to use this plugin");
 			return true;
 		}
-
 		if (command.getName().equalsIgnoreCase("tropic")) {
-			String worldname = "world_tropic";
-			long seed = new Random().nextLong();
-			//seed = 1337;
-			// remove hardcoded seed
+			String worldName;
+			final long seed;
+
 			switch (args.length) {
 				case 0:  // /tropic
+					seed = ThreadLocalRandom.current().nextLong();
+					worldName = DEFAULT_WORLD_NAME;
 					break;
-				case 1: // /tropic penisland
-					worldname = args[0];
+				case 1: // /tropic WORLD_NAME
+					seed = ThreadLocalRandom.current().nextLong();
+					worldName = args[0];
 					break;
-				case 2: // /tropic penisland 666
-					worldname = args[0];
+				case 2: // /tropic WORLD_NAME SEED
 					seed = buildSeed(args[1]);
+					worldName = args[0];
 					break;
 				default:
+					player.sendMessage("Syntax: /tropic <WORLD_NAME> <SEED>");
 					return false;
 			}
 
-			if (worldExists(worldname)) {
-				player.sendMessage(ChatColor.BLUE + "[Tropic] World " + ChatColor.WHITE + worldname + ChatColor.BLUE + " already exists. Porting to this world...");
-				World w = getServer().getWorld(worldname);
-				player.teleport(w.getSpawnLocation());
-				return true;
-			} else {
-				player.sendMessage(ChatColor.BLUE + "[Tropic] Generating world " + ChatColor.WHITE + worldname + ChatColor.BLUE + " with seed " + ChatColor.WHITE + seed + ChatColor.BLUE + "...");
-				wgen = new Tropic_ChunkGenerator(seed, buildPopulators());
-				World w = WorldCreator.name(worldname).environment(Environment.NORMAL).seed(seed).generator(wgen).createWorld();
-				log.info(player.getName() + " created a new world: " + worldname + " with seed " + seed);
-				player.sendMessage("[Tropic] done. Porting to the generated world");
-				player.teleport(w.getSpawnLocation());
-				return true;
+			if (!worldName.startsWith(WORLD_PREFIX)) {
+				worldName = WORLD_PREFIX + worldName;
 			}
+
+			player.sendMessage(ChatColor.BLUE + "[Tropic] Generating/loading world " + ChatColor.WHITE + worldName + ChatColor.BLUE + " with seed " + ChatColor.WHITE + seed + ChatColor.BLUE + "...");
+			final World world = WorldCreator.name(worldName).environment(Environment.NORMAL).seed(seed).generator(wgen).createWorld();
+			log.info("[Tropic] " + player.getName() + " created/loaded world: " + worldName + " with seed " + world.getSeed());
+
+			player.sendMessage(ChatColor.BLUE + "[Tropic] done, teleporting to spawn of the generated world");
+			player.teleport(world.getSpawnLocation());
+
+			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * Builds a seed from a string
-	 *
-	 * @param String seed user input
-	 * @return long seed
-	 */
-	private long buildSeed(String s) {
-		long ret;
-		try {
-			ret = Long.parseLong(s);
-		} catch (NumberFormatException e) {
-			ret = s.hashCode();
-		}
-		return ret;
 	}
 
 	/**
@@ -124,49 +106,48 @@ public class Tropic extends JavaPlugin {
 	 *
 	 * @return a ArrayList<BlockPopulator> that contains all populators for a tropic world
 	 */
-	private List<BlockPopulator> buildPopulators() {
-		List<BlockPopulator> populators_delayed = new ArrayList<BlockPopulator>();
-		populators_delayed.add(new Populator_Tree_Medium());
-		populators_delayed.add(new Populator_Tree_Small());
-		populators_delayed.add(new Populator_Bush());
-		populators_delayed.add(new Populator_Glowshroom());
-		populators_delayed.add(new Populator_Melon());
-		populators_delayed.add(new Populator_Pumpkin());
-		populators_delayed.add(new Populator_Gravel());
-		populators_delayed.add(new Populator_Sugarcane());
-		populators_delayed.add(new Populator_Flowers());
-		populators_delayed.add(new Populator_Mushrooms());
-		populators_delayed.add(new Populator_Longgrass());
-		populators_delayed.add(new Populator_Water_Lily());
+	private static List<BlockPopulator> buildPopulators() {
+		final List<BlockPopulator> populators = new ArrayList<>();
+		populators.add(new PopulatorLakeAndCreek());
+		populators.add(new PopulatorLavaLakes());
+		populators.add(new PopulatorCaves());
+		populators.add(new PopulatorOres());
+		populators.add(new PopulatorOreVein());
+		populators.add(new PopulatorTreeWorld());
 
-		List<BlockPopulator> populators_main = new ArrayList<BlockPopulator>();
-		populators_main.add(new Populator_Lake_And_Creek());
-		populators_main.add(new Populator_Lava_Lakes());
-		populators_main.add(new Populator_Caves());
-		populators_main.add(new Populator_Ores());
-		populators_main.add(new Populator_OreVein());
-		populators_main.add(new Populator_Tree_World());
+		populators.add(new PopulatorTreeMedium());
+		populators.add(new PopulatorTreeSmall());
+		populators.add(new PopulatorBush());
+		populators.add(new PopulatorGlowshroom());
+		populators.add(new PopulatorMelon());
+		populators.add(new PopulatorPumpkin());
+		populators.add(new PopulatorGravel());
+		populators.add(new PopulatorSugarcane());
+		populators.add(new PopulatorFlowers());
+		populators.add(new PopulatorMushrooms());
+		populators.add(new PopulatorLonggrass());
+		populators.add(new PopulatorWaterLily());
 
-		populators_main.add(new Populator_Delayed(populators_delayed, this, getServer().getScheduler()));
-
-		//populators_main.clear();
-		return populators_main;
+		return populators;
 	}
 
 	/**
-	 * Checks if a world exists
+	 * Builds a seed from a string
 	 *
-	 * @param wname
-	 * @return
+	 * @param s seed user input
+	 * @return long seed
 	 */
-	private boolean worldExists(String wname) {
-		List<World> worlds = getServer().getWorlds();
-		for (World world : worlds) {
-			if (world.getName().equalsIgnoreCase(wname)) {
-				return true;
-			}
+	private long buildSeed(final String s) {
+		try {
+			return Long.parseLong(s);
+		} catch (final NumberFormatException e) {
+			return s.hashCode();
 		}
-		return false;
 	}
 
+	@Override
+	public ChunkGenerator getDefaultWorldGenerator(final String worldName, final String id) {
+		log.info("[Tropic] getDefaultWorldGenerator(" + worldName + ")");
+		return wgen;
+	}
 }

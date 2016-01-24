@@ -25,21 +25,21 @@ import org.bukkit.generator.BlockPopulator;
 
 import java.util.Random;
 
-public class Populator_Glowshroom extends BlockPopulator {
+public class PopulatorGlowshroom extends BlockPopulator {
 
 	@Override
-	public void populate(World world, Random rnd, Chunk source) {
-		if (rnd.nextInt(100) >= 7) {
+	public void populate(final World world, final Random rnd, final Chunk source) {
+		if (rnd.nextInt(100) >= 1) {
 			return;
 		}
 
-		Block base = getHighestBlock(source, rnd.nextInt(16), rnd.nextInt(16));
+		final Block base = getHighestBlock(source, rnd.nextInt(16), rnd.nextInt(16));
 		if (base != null) {
 			createGlowShroom(base.getRelative(0, 1, 0));
 		}
 	}
 
-	private void createGlowShroom(Block base) {
+	private void createGlowShroom(final Block base) {
 
 		// Stem
 		changeBlock(base, 0, 0, 0, 100, (byte) 10);
@@ -121,7 +121,7 @@ public class Populator_Glowshroom extends BlockPopulator {
 		changeBlock(base, -2, 3, 1, 100, (byte) 7);
 	}
 
-	private void changeBlock(Block base, int x, int y, int z, int mat, byte data) {
+	private void changeBlock(final Block base, final int x, final int y, final int z, final int mat, final byte data) {
 		base.getRelative(x, y, z).setTypeIdAndData(mat, data, false);
 	}
 
@@ -133,7 +133,7 @@ public class Populator_Glowshroom extends BlockPopulator {
 	 * @param z
 	 * @return Block highest non-air
 	 */
-	public Block getHighestBlock(Chunk chunk, int x, int z) {
+	public Block getHighestBlock(final Chunk chunk, final int x, final int z) {
 		Block block = null;
 		for (int i = chunk.getWorld().getMaxHeight(); i >= 0; i--) {
 			if ((block = chunk.getBlock(x, i, z)).getTypeId() == 2) {

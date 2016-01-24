@@ -26,29 +26,29 @@ import org.bukkit.generator.BlockPopulator;
 
 import java.util.Random;
 
-public class Populator_Melon extends BlockPopulator {
+public class PopulatorMelon extends BlockPopulator {
 
 	int chancePer100, numMelons, depositRadius;
 
-	public Populator_Melon() {
+	public PopulatorMelon() {
 		this.chancePer100 = 3;
 		this.numMelons = 7;
 		this.depositRadius = 10;
 	}
 
 	@Override
-	public void populate(World world, Random random, Chunk source) {
+	public void populate(final World world, final Random random, final Chunk source) {
 		// Check if we should place a melon patch on this chunk
 		if (random.nextInt(100) < chancePer100) {
-			int x = (source.getX() << 4) + random.nextInt(16);
-			int z = (source.getZ() << 4) + random.nextInt(16);
+			final int x = (source.getX() << 4) + random.nextInt(16);
+			final int z = (source.getZ() << 4) + random.nextInt(16);
 
 			for (int i = 0; i < random.nextInt(numMelons); i++) {
 				// Pick a random spot within the radius
-				int cx = x + random.nextInt(depositRadius * 2) - depositRadius;
-				int cz = z + random.nextInt(depositRadius * 2) - depositRadius;
+				final int cx = x + random.nextInt(depositRadius * 2) - depositRadius;
+				final int cz = z + random.nextInt(depositRadius * 2) - depositRadius;
 
-				Block base = getHighestBlock(world, cx, cz);
+				final Block base = getHighestBlock(world, cx, cz);
 				if (base != null) {
 					base.getRelative(0, 1, 0).setType(Material.MELON_BLOCK);
 				}
@@ -64,7 +64,7 @@ public class Populator_Melon extends BlockPopulator {
 	 * @param z
 	 * @return Block highest non-air
 	 */
-	private Block getHighestBlock(World world, int x, int z) {
+	private Block getHighestBlock(final World world, final int x, final int z) {
 		Block block = null;
 		// Return the highest block
 		for (int i = world.getMaxHeight(); i >= 0; i--)

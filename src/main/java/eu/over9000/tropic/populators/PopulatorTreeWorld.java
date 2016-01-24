@@ -31,39 +31,40 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
-public class Populator_Tree_World extends BlockPopulator {
-	private Set<Block> trunkblocks = new HashSet<Block>();
-	private Set<Block> rootblocks = new HashSet<Block>();
-	private Set<Block> branchblocks = new HashSet<Block>();
+public class PopulatorTreeWorld extends BlockPopulator {
+	private final Set<Block> trunkblocks = new HashSet<>();
+	private final Set<Block> rootblocks = new HashSet<>();
+	private final Set<Block> branchblocks = new HashSet<>();
 
-	private int chance = 10;
-
-	private static boolean populating = false;
+	private final AtomicBoolean active = new AtomicBoolean(false);
 
 	@Override
-	public void populate(World world, Random rand, Chunk chunk) {
-
-		if (rand.nextInt(100) > chance || populating) {
+	public void populate(final World world, final Random rand, final Chunk chunk) {
+		if (rand.nextFloat() > 0.01) {
 			return;
 		}
-		populating = true;
+
+		if (!active.compareAndSet(false, true)) {
+			return;
+		}
 
 		trunkblocks.clear();
 		rootblocks.clear();
 		branchblocks.clear();
 
-		int num = rand.nextInt(5) + 5;
+		final int num = rand.nextInt(5) + 5;
 		Block start = this.getHighestBlock(chunk, rand.nextInt(8), rand.nextInt(8));
 
 
 		if (start.getY() < 62 || start.getY() > 110) {
-			populating = false;
+			active.set(false);
 			return;
 		}
 
-		//System.out.println("WorldTree! "+start.getX()+","+start.getZ());
+		//System.out.println("WorldTree! " + chunk.getX() + "," + chunk.getZ());
 		//chance to have "air" trees
 		if (rand.nextInt(100) < 10) {
 			start = start.getRelative(0, 7, 0);
@@ -71,13 +72,13 @@ public class Populator_Tree_World extends BlockPopulator {
 
 
 		createRoots(num, start, rand, rootblocks);
-		Block branch_start = createTrunk(num, start, rand, trunkblocks);
+		final Block branch_start = createTrunk(num, start, rand, trunkblocks);
 
-		Set<Block> force_leaves;
+		final Set<Block> force_leaves;
 		force_leaves = createBranches(num, branch_start, rand, branchblocks);
 		force_leaves.addAll(createBranches(num + 2, branch_start.getRelative(0, -10, 0), rand, branchblocks));
 
-		Set<Block> leavesblocks;
+		final Set<Block> leavesblocks;
 		leavesblocks = createLeaves(branchblocks, rand, true);
 		leavesblocks.addAll(createLeaves(force_leaves, rand, false));
 
@@ -90,9 +91,7 @@ public class Populator_Tree_World extends BlockPopulator {
 		createVine(trunkblocks, rand, false);
 		createVine(rootblocks, rand, false);
 
-		populating = false;
-
-		System.gc();
+		active.set(false);
 	}
 
 	/**
@@ -101,15 +100,15 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param rand
 	 * @param blocks
 	 */
-	public void createRoots(int num, Block start, Random rand, Set<Block> blocks) {
+	public void createRoots(final int num, final Block start, final Random rand, final Set<Block> blocks) {
 		int radius = 3;
 		for (int j = 0; j <= num + 2; j++) {
 
-			int length = 15 + rand.nextInt(35);
+			final int length = 15 + rand.nextInt(35);
 
-			Vector direction = new Vector(getRandom(rand), rand.nextDouble() * 0.33, getRandom(rand));
+			final Vector direction = new Vector(getRandom(rand), rand.nextDouble() * 0.33, getRandom(rand));
 
-			Location loc = start.getLocation();
+			final Location loc = start.getLocation();
 			generateSphere(loc, blocks, radius, false, true);
 			// What does this even DO?
 			for (int i = 0; i < length; i++) {
@@ -132,16 +131,16 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param blocks
 	 * @return
 	 */
-	public Set<Block> createBranches(int num, Block start, Random rand, Set<Block> blocks) {
-		HashSet<Block> endblocks = new HashSet<Block>();
+	public Set<Block> createBranches(final int num, final Block start, final Random rand, final Set<Block> blocks) {
+		final HashSet<Block> endblocks = new HashSet<>();
 		int radius = 3;
 		for (int j = 0; j <= num + 3; j++) {
 
-			int length = 15 + rand.nextInt(15);
+			final int length = 15 + rand.nextInt(15);
 
-			Vector direction = new Vector(getRandom(rand), rand.nextDouble() * 0.025, getRandom(rand));
+			final Vector direction = new Vector(getRandom(rand), rand.nextDouble() * 0.025, getRandom(rand));
 
-			Location loc = start.getLocation();
+			final Location loc = start.getLocation();
 			generateSphere(loc, blocks, radius, true, true);
 			for (int i = 0; i <= length; i++) {
 				loc.add(direction);
@@ -164,8 +163,8 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param blocks
 	 * @return
 	 */
-	public Block createTrunk(int num, Block block, Random rand, Set<Block> blocks) {
-		int start_y = block.getY();
+	public Block createTrunk(final int num, Block block, final Random rand, final Set<Block> blocks) {
+		final int start_y = block.getY();
 		int radius = rand.nextBoolean() ? 4 : 5;
 		for (int y = 0; y < num * 3 + radius * 4; y = y + 3) {
 			block = block.getLocation().add(rand.nextInt(2) - 1, radius / 2 + 2, rand.nextInt(2) - 1).getBlock();
@@ -184,7 +183,7 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param rand
 	 * @return
 	 */
-	public double getRandom(Random rand) {
+	public double getRandom(final Random rand) {
 		double r = rand.nextDouble() * 2 - 1;
 		while (Math.abs(r) < 0.3) {
 			r = rand.nextDouble() * 2 - 1;
@@ -198,22 +197,22 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param random
 	 * @return
 	 */
-	private Set<Block> createLeaves(Set<Block> blocks, Random rand, boolean random) {
-		Set<Block> leaves = new HashSet<Block>();
-		for (Block block : blocks) {
+	private Set<Block> createLeaves(final Set<Block> blocks, final Random rand, final boolean random) {
+		final Set<Block> leaves = new HashSet<>();
+		for (final Block block : blocks) {
 			if (!random || rand.nextInt(200) < 3) {
-				int radius = rand.nextBoolean() ? 4 : 5;
-				int radius_squared = radius * radius;
-				Location center = block.getLocation();
-				Vector c = new Vector(0, 0, 0);
+				final int radius = rand.nextBoolean() ? 4 : 5;
+				final int radius_squared = radius * radius;
+				final Location center = block.getLocation();
+				final Vector c = new Vector(0, 0, 0);
 				for (int x = -radius; x <= radius; x++)
 					for (int z = -radius; z <= radius; z++)
 						for (int y = 0; y <= radius - 1; y++) {
 							// Calculate 3 dimensional distance
-							Vector v = new Vector(x, y, z);
+							final Vector v = new Vector(x, y, z);
 							// If it's within this radius gen the sphere
 							if (c.distanceSquared(v) <= radius_squared) {
-								Block b = center.getBlock().getRelative(x, y, z);
+								final Block b = center.getBlock().getRelative(x, y, z);
 								leaves.add(b);
 							}
 						}
@@ -229,28 +228,28 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param ignore_height
 	 * @param allow_same
 	 */
-	private void generateSphere(Location center, Set<Block> blocks, int radius, boolean ignore_height, boolean allow_same) {
+	private void generateSphere(final Location center, final Set<Block> blocks, final int radius, final boolean ignore_height, final boolean allow_same) {
 		if (!ignore_height) {
 			if (center.getBlock().getY() < 50) {
 				return;
 			}
 		}
-		int radius_squared = radius * radius;
-		Vector c = new Vector(0, 0, 0);
+		final int radius_squared = radius * radius;
+		final Vector c = new Vector(0, 0, 0);
 		for (int x = -radius; x <= radius; x++)
 			for (int z = -radius; z <= radius; z++)
 				for (int y = -radius; y <= radius; y++) {
 					// Calculate 3 dimensional distance
-					Vector v = new Vector(x, y, z);
+					final Vector v = new Vector(x, y, z);
 					// If it's within this radius gen the sphere
 					if (c.distanceSquared(v) < radius_squared) {
-						Block b = center.getBlock().getRelative(x, y, z);
+						final Block b = center.getBlock().getRelative(x, y, z);
 						// Check if the block is already MOSSY_COBBLESTONE
 						if (checkMaterialIsModdable(b)) {
 							blocks.add(b);
 						}
 					} else if (allow_same && (c.distanceSquared(v) == radius_squared)) {
-						Block b = center.getBlock().getRelative(x, y, z);
+						final Block b = center.getBlock().getRelative(x, y, z);
 						if (checkMaterialIsModdable(b)) {
 							blocks.add(b);
 						}
@@ -266,7 +265,7 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param z
 	 * @return Block highest non-air
 	 */
-	private Block getHighestBlock(Chunk chunk, int x, int z) {
+	private Block getHighestBlock(final Chunk chunk, final int x, final int z) {
 		Block block = null;
 		// Return the highest block
 		for (int i = 127; i >= 0; i--)
@@ -281,9 +280,9 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param rnd
 	 * @param leaves
 	 */
-	private void createVine(Set<Block> blocks, Random rnd, boolean leaves) {
-		HashMap<Block, BlockFace> toHandle = getOutsideBlocks(blocks);
-		for (Block key : toHandle.keySet()) {
+	private void createVine(final Set<Block> blocks, final Random rnd, final boolean leaves) {
+		final HashMap<Block, BlockFace> toHandle = getOutsideBlocks(blocks);
+		for (final Block key : toHandle.keySet()) {
 			if (rnd.nextInt(100) < (leaves ? 25 : 10)) {
 				Block handle = key.getRelative(toHandle.get(key));
 				for (int y = 0; y > -1 * (rnd.nextInt(45) + 10); y--) {
@@ -302,10 +301,10 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param leaves
 	 * @return
 	 */
-	private HashMap<Block, BlockFace> getOutsideBlocks(Set<Block> leaves) {
-		HashMap<Block, BlockFace> outside_blocks = new HashMap<Block, BlockFace>();
-		for (Block block : leaves) {
-			BlockFace side = getAirFacingSide(block);
+	private HashMap<Block, BlockFace> getOutsideBlocks(final Set<Block> leaves) {
+		final HashMap<Block, BlockFace> outside_blocks = new HashMap<>();
+		for (final Block block : leaves) {
+			final BlockFace side = getAirFacingSide(block);
 			if (side != null) {
 				outside_blocks.put(block, side);
 			}
@@ -317,7 +316,7 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param block
 	 * @return
 	 */
-	private BlockFace getAirFacingSide(Block block) {
+	private BlockFace getAirFacingSide(final Block block) {
 		if (block.getRelative(BlockFace.NORTH).getType() == Material.AIR) {
 			return BlockFace.NORTH;
 		}
@@ -337,7 +336,7 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param face
 	 * @return
 	 */
-	private byte BlockFaceToVineData(BlockFace face) {
+	private byte BlockFaceToVineData(final BlockFace face) {
 		switch (face) {
 			case SOUTH:
 				return 2; //
@@ -356,7 +355,7 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param block
 	 * @return
 	 */
-	private boolean checkMaterialIsModdable(Block block) {
+	private boolean checkMaterialIsModdable(final Block block) {
 		return block.getType() == Material.AIR ||
 				block.getType() == Material.DIRT ||
 				block.getType() == Material.GRASS ||
@@ -371,16 +370,16 @@ public class Populator_Tree_World extends BlockPopulator {
 	 * @param data
 	 * @param checkIsAir
 	 */
-	private void buildBlocks(Set<Block> blocks, Material material, byte data, boolean checkIsAir) {
+	private void buildBlocks(final Set<Block> blocks, final Material material, final byte data, final boolean checkIsAir) {
 		if (checkIsAir) {
-			for (Block b : blocks) {
+			for (final Block b : blocks) {
 				if (b.getType() == Material.AIR) {
 					b.setType(material);
 					b.setData(data);
 				}
 			}
 		} else {
-			for (Block b : blocks) {
+			for (final Block b : blocks) {
 				b.setType(material);
 				b.setData(data);
 			}

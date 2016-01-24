@@ -27,25 +27,25 @@ import org.bukkit.generator.BlockPopulator;
 
 import java.util.Random;
 
-public class Populator_Sugarcane extends BlockPopulator {
+public class PopulatorSugarcane extends BlockPopulator {
 
-	private int canePatchChance;
-	private Material cane;
+	private final int canePatchChance;
+	private final Material cane;
 
-	private BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
+	private final BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
 
-	public Populator_Sugarcane() {
+	public PopulatorSugarcane() {
 		this.canePatchChance = 80;
 		cane = Material.SUGAR_CANE_BLOCK;
 	}
 
 	@Override
-	public void populate(World world, Random random, Chunk source) {
+	public void populate(final World world, final Random random, final Chunk source) {
 
 		// Check if we should plant a flower patch here
 		if (random.nextInt(100) < canePatchChance) {
 			for (int i = 0; i < 16; i++) {
-				Block b;
+				final Block b;
 				if (random.nextBoolean())
 					b = getHighestBlock(source, random.nextInt(16), i);
 				else
@@ -58,10 +58,10 @@ public class Populator_Sugarcane extends BlockPopulator {
 		}
 	}
 
-	public void createCane(Block b, Random rand) {
+	public void createCane(final Block b, final Random rand) {
 		// Is water nearby?
 		boolean create = false;
-		for (BlockFace face : faces) {
+		for (final BlockFace face : faces) {
 			if (b.getRelative(face).getType().name().toLowerCase().contains("water")) {
 				create = true;
 			}
@@ -77,12 +77,9 @@ public class Populator_Sugarcane extends BlockPopulator {
 	/**
 	 * Iteratively determines the highest grass/sand block
 	 *
-	 * @param chunk
-	 * @param x
-	 * @param z
 	 * @return Block highest non-air
 	 */
-	public Block getHighestBlock(Chunk chunk, int x, int z) {
+	public Block getHighestBlock(final Chunk chunk, final int x, final int z) {
 		Block block = null;
 		// Return the highest block
 		for (int i = chunk.getWorld().getMaxHeight(); i >= 0; i--) {

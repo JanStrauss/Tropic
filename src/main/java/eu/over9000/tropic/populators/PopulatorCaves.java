@@ -32,24 +32,24 @@ import java.util.Random;
 /**
  * BlockPopulator for snake-based caves.
  */
-public class Populator_Caves extends BlockPopulator {
+public class PopulatorCaves extends BlockPopulator {
 
 	private static boolean isGenerating = false;
 
 	@Override
-	public void populate(World world, Random random, Chunk chunk) {
+	public void populate(final World world, final Random random, final Chunk chunk) {
 		if (isGenerating || random.nextInt(100) >= 5)
 			return;
 
-		int rx = 4 + random.nextInt(8);
-		int rz = 4 + random.nextInt(8);
+		final int rx = 4 + random.nextInt(8);
+		final int rz = 4 + random.nextInt(8);
 		int maxY = world.getHighestBlockYAt(rx, rz);
 		if (maxY < 16) {
 			maxY = 44;
 		}
 
 		isGenerating = true;
-		int ry = random.nextInt(maxY);
+		final int ry = random.nextInt(maxY);
 		ArrayList<Block> snake = startSnake(world, random, chunk.getBlock(rx, ry, rz));
 		finishSnake(world, random, snake);
 
@@ -65,8 +65,8 @@ public class Populator_Caves extends BlockPopulator {
 		isGenerating = false;
 	}
 
-	private ArrayList<Block> startSnake(World world, Random random, Block block) {
-		ArrayList<Block> snakeBlocks = new ArrayList<Block>();
+	private ArrayList<Block> startSnake(final World world, final Random random, final Block block) {
+		final ArrayList<Block> snakeBlocks = new ArrayList<>();
 
 		int blockX = block.getX();
 		int blockY = block.getY();
@@ -118,15 +118,15 @@ public class Populator_Caves extends BlockPopulator {
 		return snakeBlocks;
 	}
 
-	private void finishSnake(World world, Random random, ArrayList<Block> snakeBlocks) {
-		for (Block block : snakeBlocks) {
-			Vector center = new BlockVector(block.getX(), block.getY(), block.getZ());
+	private void finishSnake(final World world, final Random random, final ArrayList<Block> snakeBlocks) {
+		for (final Block block : snakeBlocks) {
+			final Vector center = new BlockVector(block.getX(), block.getY(), block.getZ());
 			if (block.getType() != Material.AIR) {
-				int radius = 1 + random.nextInt(3);
+				final int radius = 1 + random.nextInt(3);
 				for (int x = -radius; x <= radius; x++) {
 					for (int y = -radius; y <= radius; y++) {
 						for (int z = -radius; z <= radius; z++) {
-							Vector position = center.clone().add(new Vector(x, y, z));
+							final Vector position = center.clone().add(new Vector(x, y, z));
 
 							if (center.distance(position) <= radius + 0.5) {
 								if (canPlaceBlock(world, position.getBlockX(), position.getBlockY(), position.getBlockZ())) {
@@ -140,7 +140,7 @@ public class Populator_Caves extends BlockPopulator {
 		}
 	}
 
-	private boolean canPlaceBlock(World world, int x, int y, int z) {
+	private boolean canPlaceBlock(final World world, final int x, final int y, final int z) {
 		switch (world.getBlockAt(x, y, z).getType()) {
 			case AIR:
 			case WATER:

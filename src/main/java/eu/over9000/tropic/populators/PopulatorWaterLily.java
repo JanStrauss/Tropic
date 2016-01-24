@@ -26,18 +26,21 @@ import org.bukkit.generator.BlockPopulator;
 
 import java.util.Random;
 
-public class Populator_Longgrass extends BlockPopulator {
+public class PopulatorWaterLily extends BlockPopulator {
 
 	@Override
-	public void populate(World world, Random random, Chunk source) {
-		for (int x = 0; x < 16; x++) {
-			for (int z = 0; z < 16; z++) {
-				int chance = random.nextInt(100);
-				if (chance < 75) {
-					Block handle = getHighestBlock(source, x, z);
-					if (handle != null) {
-						if (handle.getType() == Material.AIR && handle.getLightLevel() >= 4) {
-							handle.setTypeIdAndData(Material.LONG_GRASS.getId(), (byte) (random.nextInt(100) < 10 ? 2 : 1), false);
+	public void populate(final World w, final Random rnd, final Chunk c) {
+
+		for (int x = c.getX() * 16; x < c.getX() * 16 + 16; x++) {
+			for (int z = c.getZ() * 16; z < c.getZ() * 16 + 16; z++) {
+				final Block over_water = getHighestBlock(c, x, z);
+				if (over_water != null) {
+					if (over_water.getType() == Material.AIR) {
+						final int depth = waterDepth(over_water.getRelative(0, -1, 0));
+						if (depth <= 5) {
+							if (rnd.nextInt(100) < (8 * (6 - depth))) {
+								over_water.setType(Material.WATER_LILY);
+							}
 						}
 					}
 				}
@@ -46,20 +49,30 @@ public class Populator_Longgrass extends BlockPopulator {
 	}
 
 	/**
-	 * Iteratively determines the highest grass block
-	 *
-	 * @param chunk
-	 * @param x
-	 * @param z
-	 * @return Block highest non-air
+	 * Iteratively determines the highest water
 	 */
-	private Block getHighestBlock(Chunk chunk, int x, int z) {
+	private Block getHighestBlock(final Chunk chunk, final int x, final int z) {
 		Block block = null;
 		// Return the highest block
 		for (int i = chunk.getWorld().getMaxHeight(); i >= 0; i--)
-			if ((block = chunk.getBlock(x, i, z)).getTypeId() == 2)
+			if ((block = chunk.getBlock(x, i, z)).getTypeId() == 8 || (block = chunk.getBlock(x, i, z)).getTypeId() == 9)
 				return block.getRelative(0, 1, 0);
 		// And as a matter of completeness, return the lowest point
 		return block;
+	}
+
+	/**
+	 * gets the water depth
+	 */
+	private int waterDepth(Block surface) {
+		int depth = 0;
+		while (surface.getTypeId() == 9 || surface.getTypeId() == 8) {
+			depth++;
+			surface = surface.getRelative(0, -1, 0);
+			if (depth > 5) {
+				break;
+			}
+		}
+		return depth;
 	}
 }

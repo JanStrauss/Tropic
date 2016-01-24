@@ -30,22 +30,20 @@ import org.bukkit.util.noise.SimplexNoiseGenerator;
 import java.util.List;
 import java.util.Random;
 
-public class Tropic_ChunkGenerator extends ChunkGenerator {
-	private int currheight;
+public class TropicChunkGenerator extends ChunkGenerator {
 	private long usedSeed;
 
 	private FMB_RMF n_p;
 	private SimplexNoiseGenerator ground_nouise;
 	private Voronoi cliffs;
 
-	private List<BlockPopulator> populators;
+	private final List<BlockPopulator> populators;
 
-	public Tropic_ChunkGenerator(long seed, List<BlockPopulator> buildPopulators) {
-		this.usedSeed = seed;
-		this.n_p = new FMB_RMF(seed);
-		this.populators = buildPopulators;
-		this.ground_nouise = new SimplexNoiseGenerator(seed);
-		this.cliffs = new Voronoi(64, true, seed, 16, Voronoi.DistanceMetric.Squared, 4);
+	public TropicChunkGenerator(final List<BlockPopulator> populators) {
+		this.usedSeed = 1337L;
+		this.populators = populators;
+
+		changeSeed(usedSeed);
 	}
 
 	/**
@@ -57,9 +55,9 @@ public class Tropic_ChunkGenerator extends ChunkGenerator {
 	 * @param z          coordinate
 	 * @param material   to set at the coordinates
 	 */
-	private static void setMaterialAt(byte[][] chunk_data, int x, int y, int z, Material material) {
-		int sec_id = (y >> 4);
-		int yy = y & 0xF;
+	private static void setMaterialAt(final byte[][] chunk_data, final int x, final int y, final int z, final Material material) {
+		final int sec_id = (y >> 4);
+		final int yy = y & 0xF;
 		if (chunk_data[sec_id] == null) {
 			chunk_data[sec_id] = new byte[4096];
 		}
@@ -67,16 +65,16 @@ public class Tropic_ChunkGenerator extends ChunkGenerator {
 	}
 
 	@Override
-	public byte[][] generateBlockSections(World world, Random random, int xchunk, int zchunk, BiomeGrid biomes) {
+	public byte[][] generateBlockSections(final World world, final Random random, final int xchunk, final int zchunk, final BiomeGrid biomes) {
 		checkSeed(world.getSeed());
-		byte[][] result = new byte[16][];
+		final byte[][] result = new byte[16][];
 
 		final int SEELEVEL = 60;
 		final int TIMBERLIMIT = 110;
 
 		for (int x = 0; x < 16; x++) {
 			for (int z = 0; z < 16; z++) {
-				currheight = 50;
+				int currheight = 50;
 				currheight = Math.max(currheight, genGroundNoise(x, z, xchunk, zchunk) + 60);
 
 				final int DIRTHEIGHT = random.nextInt(5);
@@ -128,13 +126,13 @@ public class Tropic_ChunkGenerator extends ChunkGenerator {
 		return result;
 	}
 
-	private int genGroundNoise(int x, int z, int xchunk, int zchunk) {
-		double x_calc = ((x + xchunk * 16) + Integer.MAX_VALUE / 2) * 0.003d;
-		double z_calc = ((z + zchunk * 16) + Integer.MAX_VALUE / 2) * 0.003d;
+	private int genGroundNoise(final int x, final int z, final int xchunk, final int zchunk) {
+		final double x_calc = ((x + xchunk * 16) + Integer.MAX_VALUE / 2) * 0.003d;
+		final double z_calc = ((z + zchunk * 16) + Integer.MAX_VALUE / 2) * 0.003d;
 
-		double temp = n_p.noise_FractionalBrownianMotion(x_calc, z_calc, 0, 6, 0.45f, 1.5f);
-		double ground = ground_nouise.noise(x_calc, z_calc, 4, 0.25, 0.125) * 33;
-		double cliff = cliffs.get((x + xchunk * 16) / 250.0f, (z + zchunk * 16) / 250.0f) * 120;
+		final double temp = n_p.noise_FractionalBrownianMotion(x_calc, z_calc, 0, 6, 0.45f, 1.5f);
+		final double ground = ground_nouise.noise(x_calc, z_calc, 4, 0.25, 0.125) * 33;
+		final double cliff = cliffs.get((x + xchunk * 16) / 250.0f, (z + zchunk * 16) / 250.0f) * 120;
 
 		double noise = ground + (Math.abs((n_p.noise_RidgedMultiFractal(x_calc, z_calc, 0, 4, 2.85f, 0.45f, 1.0f)) + (.05f * temp)) * 55);
 		noise = noise - cliff;
@@ -144,10 +142,8 @@ public class Tropic_ChunkGenerator extends ChunkGenerator {
 
 	/**
 	 * Sets the Noise generators to use the specified seed
-	 *
-	 * @param seed
 	 */
-	public void changeSeed(Long seed) {
+	public void changeSeed(final Long seed) {
 		this.n_p = new FMB_RMF(seed);
 		this.ground_nouise = new SimplexNoiseGenerator(seed);
 		this.cliffs = new Voronoi(64, true, seed, 16, Voronoi.DistanceMetric.Squared, 4);
@@ -155,11 +151,9 @@ public class Tropic_ChunkGenerator extends ChunkGenerator {
 
 	/**
 	 * Checks if the Seed that is currently used by the Noise generators is the
-	 * same as the given seed. If not {@link Generator.changeSeed()} is called.
-	 *
-	 * @param worldSeed
+	 * same as the given seed. If not {@link TropicChunkGenerator#changeSeed(Long)} is called.
 	 */
-	private void checkSeed(Long worldSeed) {
+	private void checkSeed(final Long worldSeed) {
 		if (worldSeed != usedSeed) {
 			usedSeed = worldSeed;
 			changeSeed(worldSeed);
@@ -167,7 +161,7 @@ public class Tropic_ChunkGenerator extends ChunkGenerator {
 	}
 
 	@Override
-	public List<BlockPopulator> getDefaultPopulators(World world) {
+	public List<BlockPopulator> getDefaultPopulators(final World world) {
 		return populators;
 	}
 }

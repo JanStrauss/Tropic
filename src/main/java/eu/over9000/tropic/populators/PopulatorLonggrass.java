@@ -22,29 +22,30 @@ import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.generator.BlockPopulator;
 
 import java.util.Random;
 
-public class Populator_Flowers extends BlockPopulator {
+public class PopulatorLonggrass extends BlockPopulator {
 
 	@Override
-	public void populate(World world, Random random, Chunk source) {
-		int chance = random.nextInt(100);
-		if (chance < 25) {
-			int flowercount = random.nextInt(5) + 2;
-			int type = random.nextInt(100);
-			for (int t = 0; t <= flowercount; t++) {
-				int flower_x = random.nextInt(15);
-				int flower_z = random.nextInt(15);
+	public void populate(final World world, final Random random, final Chunk source) {
+		for (int x = 0; x < 16; x++) {
+			for (int z = 0; z < 16; z++) {
+				final int chance = random.nextInt(100);
+				if (chance < 75) {
+					final Block handle = getHighestBlock(source, x, z);
+					if (handle != null) {
+						if (handle.getType() == Material.AIR && handle.getLightLevel() >= 4) {
+							if (random.nextInt(100) < 20) {
+								final byte data = (byte) (random.nextInt(100) < 10 ? 2 : 3);
+								handle.setTypeIdAndData(Material.DOUBLE_PLANT.getId(), data, false);
+								handle.getRelative(BlockFace.UP).setTypeIdAndData(Material.DOUBLE_PLANT.getId(), data, false);
 
-				Block handle = getHighestBlock(source, flower_x, flower_z);
-				if (handle != null) {
-					if (handle.getType() == Material.AIR) {
-						if (type < 33) {
-							handle.setType(Material.RED_ROSE);
-						} else {
-							handle.setType(Material.YELLOW_FLOWER);
+							} else {
+								handle.setTypeIdAndData(Material.LONG_GRASS.getId(), (byte) (random.nextInt(100) < 10 ? 2 : 1), false);
+							}
 						}
 					}
 				}
@@ -60,7 +61,7 @@ public class Populator_Flowers extends BlockPopulator {
 	 * @param z
 	 * @return Block highest non-air
 	 */
-	private Block getHighestBlock(Chunk chunk, int x, int z) {
+	private Block getHighestBlock(final Chunk chunk, final int x, final int z) {
 		Block block = null;
 		// Return the highest block
 		for (int i = chunk.getWorld().getMaxHeight(); i >= 0; i--)
